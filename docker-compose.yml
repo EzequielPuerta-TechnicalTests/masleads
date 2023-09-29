@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+
+  api:
+    build:
+      context: ./masleads
+      dockerfile: Dockerfile
+    container_name: api
+    restart: unless-stopped
+    ports:
+      - ${API_PORT:-6001}:5000
+    volumes:
+      - ./masleads:/masleads
+      - ./testing_data:/testing_data
+    environment:
+      APP_ENV: "dev"
+      APP_DEBUG: "True"
+      POSTGRES_DB: ${POSTGRES_DB:?err}
+      POSTGRES_USER: ${POSTGRES_USER:?err}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?err}
+      POSTGRES_HOST: ${POSTGRES_HOST:?err}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      DATABASE_URI_TEST: ${DATABASE_URI_TEST:?err}
+
+  postgres:
+    image: postgres:16rc1-alpine
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    volumes:
+      - ${POSTGRES_DATA_PATH:-./postgres/data/}:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:?err}
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
